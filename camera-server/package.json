@@ -1,0 +1,16 @@
+{
+  "name": "raspivid-broadcaster",
+  "version": "1.0.0",
+  "description": "",
+  "main": "raspivid-broadcaster.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Richardn",
+  "license": "MIT",
+  "dependencies": {
+    "raspivid": "^1.0.0",
+    "stream-split": "^1.1.0",
+    "ws": "^7.4.4"
+  }
+}
