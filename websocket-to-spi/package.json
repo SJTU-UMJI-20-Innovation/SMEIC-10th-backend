@@ -1,0 +1,16 @@
+{
+  "name": "websocket-to-spi",
+  "version": "0.9.0",
+  "description": "",
+  "main": "websocket-to-spi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Richardn, Ethepherein",
+  "license": "ISC",
+  "dependencies": {
+    "onoff": "^6.0.2",
+    "pi-spi": "^1.2.1",
+    "ws": "^7.4.4"
+  }
+}
