@@ -15,7 +15,7 @@ wsServer.on('connection', (socket) => {
 });
 
 const POLYNOME = 0x7;
-const SPI_TIMEOUT = 5;
+const SPI_TIMEOUT = 10;
 const ERR_GPIO_MEGA = 17;
 const ERR_GPIO_UNO = 27;
 
@@ -138,7 +138,8 @@ function processMessage(msg) {
             console.error("Unknown Command: ", msg);
     }
     if (cmd) {
-        sendSPI(Buffer.concat([cmd, Buffer.from([getCRC(cmd)])]), dest);
+        cmd = Buffer.concat([cmd, Buffer.from([getCRC(cmd)])]);
+        sendSPI(cmd, dest);
         setTimeout(() => {checkAndResend(cmd, dest);}, SPI_TIMEOUT);
     }
 }
