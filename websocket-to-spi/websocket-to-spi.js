@@ -15,37 +15,41 @@ wsServer.on('connection', (socket) => {
 });
 
 const POLYNOME = 0x7;
-const SPI_TIMEOUT = 5;
+const SPI_TIMEOUT = 15;
 const ERR_GPIO_MEGA = 17;
 const ERR_GPIO_UNO = 27;
 
-var timer = Date.now();
-
 const Gpio = require('onoff').Gpio;
-const errorPinMEGA = new Gpio(ERR_GPIO_MEGA, 'in', 'both');
-const errorPinUNO = new Gpio(ERR_GPIO_UNO, 'in', 'both');
-
-errorPinMEGA.watch((_err, value) => {
-    if (value) {
-        timer = Date.now();
-        console.log(timer, ": MEGA Reports Error.");
-    }
+const errorPin = [];
+errorPin[MEGA] = new Gpio(ERR_GPIO_MEGA, 'in');
+errorPin[UNO] = new Gpio(ERR_GPIO_UNO, 'in');
+process.on('SIGINT', () => {
+    errorPin[MEGA].unexport();
+    errorPin[UNO].unexport();
+    process.exit();
 });
 
-errorPinUNO.watch((_err, value) => {
-    if (value) {
-        timer = Date.now();
-        console.log(timer, ": UNO Reports Error.");
-    }
-});
+var commandQueue = [];
+function send() {
+    const command = commandQueue[0];
+    sendSPI(command.cmd, command.dest);
+    setTimeout(() => {errorPin[command.dest].read(check);}, SPI_TIMEOUT);
+}
 
-function checkAndResend(cmd, dest){
-    if (Date.now() - timer < SPI_TIMEOUT){
-        console.log("Check Failed. Resending.");
-        sendSPI(cmd, dest);
-        setTimeout(() => {checkAndResend(cmd, dest);}, SPI_TIMEOUT);
+function check(err, value){
+    if (err) {
+        throw err;
+    }
+
+    if (value) {
+        console.log("CRC check failed or byte lost. Resending.");
+        send();
     } else {
-        console.log("Check Passed.\n");
+        console.log("Successfully sent.\n");
+        commandQueue.shift();
+        if (commandQueue.length) {
+            send();
+        }
     }
 }
 
@@ -146,17 +150,20 @@ function processMessage(msg) {
             console.error("Unknown Command: ", msg);
     }
     if (cmd) {
-        sendSPI(Buffer.concat([cmd, Buffer.from([getCRC(cmd)])]), dest);
-        setTimeout(() => {checkAndResend(cmd, dest);}, SPI_TIMEOUT);
+        cmd = Buffer.concat([cmd, Buffer.from([getCRC(cmd)])]);
+        commandQueue.push({cmd: cmd, dest: dest});
+        if (commandQueue.length === 1) {
+            send();
+        }
     }
 }
 
 
 function sendSPI(buffer, dest) {
     if (dest === MEGA) {
-        spiMEGA.write(buffer, () => {console.log("Sent:", buffer)});
+        spiMEGA.write(buffer, () => {console.log("Sent:", buffer, "to MEGA.")});
     }
     if (dest === UNO) {
-        spiUNO.write(buffer, () => {console.log("Sent:", buffer)});
+        spiUNO.write(buffer, () => {console.log("Sent:", buffer, "to UNO.")});
     }
 }
