@@ -79,60 +79,68 @@ function processMessage(msg) {
             dest = MEGA;
             cmd = Buffer.from([0b00011001, message[1], 0, 0 ,0]);
             break;
+        // Following commands use this protocol:
+        // 0-4| command ID
+        // 5-7| parameter bytes required (obsolete)
+        // 8| flag (?delay/?left)
+        // 9-10| num
+        // 11-23| float stored as (int)(float * 16 + 4096)
+        // 24-31| 8bit signal1
+        // 32-39| 8bit signal2
+        // 00000111 23344444 44444444 55555555 6666666
+        // byte0 = commandID << 5 + bytesRequired
+        // encodedFloat = (int)(float * 16 + 4096) & 0x1FFF
+        // byte1 = flag << 15 + num << 13 + encodedFloat >> 8
+        // byte2 = encodedFloat & 0xFF
+        // byte3 = signal1
+        // byte4 = signal2
         case "rtRtBs": case "rotateRotationBase":
-            // const firstTwoBytes = ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00100100, ((((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8), ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF), message[3], message[4]]);
             break;
         case "dlRtBs": case "delayRotationBase":
-            // const firstTwoBytes = 0x8000 + ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00100100, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "lfLfBs": case "liftLiftBase":
-            // const firstTwoBytes = ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00101100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "dlLfBs": case "delayLiftBase":
-            // const firstTwoBytes = 0x8000 + ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00101100, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "mvMvBs": case "moveMovingBase":
-            // const firstTwoBytes = (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00110100, (((message[1] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] * 16 + 4096) & 0x1FFF)), message[2], message[3]]);
             break;
         case "dlMvBs": case "delayMovingBase":
-            // const firstTwoBytes = 0x8000 + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00110100, (0x8000 + ((message[1] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] * 16 + 4096) & 0x1FFF)), message[2], message[3]]);
             break;
         case "mvAm": case "mvMvAm": case "moveArm":
-            // const firstTwoBytes = ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00111100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "dlAm": case "dlMvAm": case "delayMoveArm":
-            // const firstTwoBytes = 0x8000 + ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b00111100, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "rtSvOne": case "rotateServoOne":
-            // const firstTwoBytes = ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b01000100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "rtSvTwo": case "rotateServoTwo":
-            // const firstTwoBytes = 0x8000 + ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b01000100, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         case "cgMs": case "changeMass":
-            // const firstTwoBytes = ((message[1] & 3) << 13) + (message[2] * 16 + 4096) & 0x1FFF;
             dest = MEGA;
             cmd = Buffer.from([0b01001100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
+            break;
+        case "gtLq": case "getLiquid":
+            dest = UNO;
+            cmd = Buffer.from([0b01010100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
         default:
             console.error("Unknown Command: ", msg);
