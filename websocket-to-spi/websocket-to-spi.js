@@ -146,6 +146,14 @@ function processMessage(msg) {
             dest = UNO;
             cmd = Buffer.from([0b01010100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
             break;
+        case "mvCm": case "moveCamera":
+            dest = MEGA;
+            cmd = Buffer.from([0b01011100, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
+            break;
+        case "gtSl": case "getSolid":
+            dest = UNO;
+            cmd = Buffer.from([0b01100100, (((message[1] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] * 16 + 4096) & 0x1FFF)), message[2], message[3]]);
+            break;
         default:
             console.error("Unknown Command: ", msg);
     }
@@ -157,7 +165,6 @@ function processMessage(msg) {
         }
     }
 }
-
 
 function sendSPI(buffer, dest) {
     if (dest === MEGA) {
