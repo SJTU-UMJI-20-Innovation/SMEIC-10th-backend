@@ -154,6 +154,14 @@ function processMessage(msg) {
             dest = UNO;
             cmd = Buffer.from([0b01100100, (((message[1] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] * 16 + 4096) & 0x1FFF)), message[2], message[3]]);
             break;
+        case "dtSvThree": case "deltaServoThree":
+            dest = MEGA;
+            cmd = Buffer.from([0b01101100, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)) >> 8, (0x8000 + ((message[1] & 3) << 13) + ((message[2] * 16 + 4096) & 0x1FFF)), message[3], message[4]]);
+            break;
+        case "changeBurette": case"cgBr":
+            dest = UNO;
+            cmd = Buffer.from([0b01110100, (((message[1] * 16 + 4096) & 0x1FFF)) >> 8, (((message[1] * 16 + 4096) & 0x1FFF)), message[2], message[3]]);
+            break;
         default:
             console.error("Unknown Command: ", msg);
     }
