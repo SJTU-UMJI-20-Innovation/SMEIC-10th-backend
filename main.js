@@ -54,7 +54,7 @@ class CommandServer {
 const localCameraServerProcess = spawn('node', ['./camera-server/live-camera.js']);
 localCameraServerProcess.stdout.on('data', (data) => {
     if (data.toString() === "Server Ready.\n") {
-        new CameraRelay('localhost:8080', 2050);
+        setTimeout(() => {new CameraRelay('localhost:8080', 2050);}, 500); // Seems like the camera server requires more time to get prepared.
     }
 });
 
